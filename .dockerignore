@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+*.pyo
+*.pyd
+.Python
+pytest_cache/
+.git
+.gitignore
+README.md
+tests/  # Optional: Exclude tests if not needed in production image
