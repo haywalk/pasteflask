@@ -19,6 +19,7 @@
 
 from flask import Flask, request, jsonify
 from helpers.db import DB
+from helpers.utils import Config
 import helpers.auth as auth
 import helpers.utils as utils
 import time
@@ -92,7 +93,48 @@ def login():
     except:
         return jsonify({'message': 'Authentication failed.'}), 401
 
+@app.route('/register', methods=['POST'])
+def register():
+    '''Register a new user.
+    '''
+
+    print('asdf')
+    username = None
+    password = None
+    users = None
+
+    # make sure registration is enabled
+    registration_enabled = Config().get('registration_enabled', False)
+    if not registration_enabled:
+        return jsonify({'message': 'Registration disabled.'}), 403
+
+    # get information from request
+    try:    
+        data = request.get_json()
+        username = data['username']
+        password = data['password']
+    except:
+        return jsonify({'message': 'Missing credentials.'}), 400
+    
+    # look up list of users
+    try:
+        users = DB().list_users()
+    except:
+        return jsonify({'message', 'Internal error.'}), 500
+    
+    # make sure username is unique
+    if username in users:
+        return jsonify({'message': 'Username is taken.'}), 400
+    
+    # add user to database
+    try:
+        DB().add_user(username, password)
+    except:
+        return jsonify({'message': 'Failed to add user.'}), 500
+    
+    # success
+    return jsonify({'message': 'Success!'}), 200
+
 if __name__ == '__main__':
     # launch api
     app.run(host='0.0.0.0', debug=True)
-    

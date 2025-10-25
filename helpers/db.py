@@ -154,3 +154,38 @@ class DB:
             pastes.append(this_paste)
 
         return pastes
+    
+    def list_users(self):
+        '''List all users.
+
+        Returns:
+            list: List of usernames.
+        '''
+        cursor = self.connection.cursor()
+        result = cursor.execute('SELECT username FROM users')
+        users_raw = result.fetchall()
+        cursor.close()
+
+        users = []
+        for user in users_raw:
+            users.append(user[0])
+
+        return users
+    
+    def add_user(self, username, password):
+        '''Add a new user.
+
+        Args:
+            username (str): Username.
+            password (str): Password.
+
+        Returns:
+            bool: True if successful.
+        '''
+        cursor = self.connection.cursor()
+        cursor.execute(f'INSERT INTO users VALUES ("{username}", "{password}")')
+        cursor.close()
+        self.connection.commit()
+        return True
+    
+            

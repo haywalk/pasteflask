@@ -1,6 +1,9 @@
 # database server
 database: 'pasteflask.db'
 
+# user registration enabled
+registration_enabled: true
+
 # encryption key for JWT tokens (CHANGE THIS)
 # NOTE: if environment variable PASTEFLASK_KEY is set, it will take precedence
 secret_key: 'MYSECRETKEY'
