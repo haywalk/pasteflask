@@ -17,25 +17,33 @@
 # You should have received a copy of the GNU General Public License along with
 # Pasteflask. If not, see <https://www.gnu.org/licenses/>. 
 
-
 from flask import Flask, request, jsonify
 import helpers.db as db
 import helpers.auth as auth
-import os
+import helpers.utils as utils
+import time
 
 app = Flask(__name__)
 
-@app.route('/paste', methods=['GET'])
+@app.route('/paste', methods=['POST'])
 @auth.token_required
 def paste(user):
     '''Upload a paste.
     '''
-    #headers = request.get_json()
-    #if not headers or not headers['paste']:
-    #    return jsonify({'message'}, 'No paste received.'), 400
+    # get paste data from request
+    paste = request.get_json()
 
+    # add metadata
+    paste['author'] = user['username']
+    paste['date'] = int(time.time() * 1000)
+
+    # validate paste
+    if not utils.validate_paste(paste):
+        return jsonify({'message', 'Malformed paste.'}), 400
+
+    # put in database
     try:
-        return db.add_paste('hello world')#headers['paste'])
+        return db.add_paste(paste)
     except:
         return jsonify({'message': 'Failed to paste.'}), 500
 
@@ -54,7 +62,7 @@ def retrieve(id):
     except:
         return jsonify({'message': 'No such paste.'}), 404
 
-@app.route('/login', methods=['GET'])
+@app.route('/login', methods=['POST'])
 def login():
     '''Log in.
 
@@ -62,12 +70,12 @@ def login():
         str: Auth token if successful.
     '''
     # pull header from request with username and password
-    header = request.get_json()    
-    if not header or not header['username'] or not header['password']:
+    data = request.get_json()    
+    if not data or not data['username'] or not data['password']:
         return jsonify({'message': 'Missing credentials.'}), 400
 
     # attempt to generate an auth token
-    return auth.generate_token(header['username'], header['password'])
+    return auth.generate_token(data['username'], data['password'])
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Pasteflask. If not, see <https://www.gnu.org/licenses/>. 
 
+import helpers.utils as utils
 
 def add_paste(paste):
     '''Write information to the database.
@@ -26,7 +27,8 @@ def add_paste(paste):
         str: Paste ID if successful.
     '''
     print(f'Writing {paste} to the database')
-    return '1234'
+    id = utils.generate_id()
+    return id
 
 def retrieve_paste(id):
     '''Retrieve a paste from the database.
