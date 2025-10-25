@@ -17,6 +17,17 @@
 
 import helpers.utils as utils
 
+# mock user database
+users = {
+    'testuser': {
+        'username': 'testuser',
+        'password': 'testpass'
+    }
+}
+
+# mock paste database
+pastes = {}
+
 def add_paste(paste):
     '''Write information to the database.
 
@@ -26,8 +37,8 @@ def add_paste(paste):
     Returns:
         str: Paste ID if successful.
     '''
-    print(f'Writing {paste} to the database')
     id = utils.generate_id()
+    pastes[id] = paste
     return id
 
 def retrieve_paste(id):
@@ -39,7 +50,7 @@ def retrieve_paste(id):
     Returns:
         dict: Paste contents.
     '''
-    return id
+    return pastes[id]
 
 def get_user_info(username):
     '''Pull user information from the database.
@@ -50,12 +61,4 @@ def get_user_info(username):
     Returns:
         dict: User information.
     '''
-    # Mock user database
-    users = {
-        'testuser': {
-            'username': 'testuser',
-            'password': 'testpass'
-        }
-    }
-
     return users[username]

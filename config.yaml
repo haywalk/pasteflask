@@ -1,2 +1,9 @@
 # how long a login token lasts for
 token_expiry_days: 7 
+
+# required fields in a paste
+paste_required_fields:
+  - title
+  - author
+  - date
+  - content

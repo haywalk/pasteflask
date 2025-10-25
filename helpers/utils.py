@@ -16,8 +16,23 @@
 # Pasteflask. If not, see <https://www.gnu.org/licenses/>. 
 
 import time
+import yaml
 
-def validate_paste(paste):
+def get_config(config_file):
+    '''Load a YAML configuration file.
+
+    Args:
+        config_file (str): Path to config file.
+
+    Return:
+        dict: Configuration.
+    '''
+    with open(config_file, 'r') as file:
+        data = yaml.safe_load(file)
+    return data
+    
+
+def validate_paste(config, paste):
     '''Validate a paste.
 
     Args:
@@ -30,21 +45,25 @@ def validate_paste(paste):
     if not paste:
         return False
     
-    # must have title
-    if not 'title' in paste or not paste['title']:
-        return False
-    
-    # must have content
-    if not 'content' in paste or not paste['content']:
-        return False
+    # for field in config['paste_required_fields']:
+    #     if not field in paste or not paste[field]:
+    #         return False
 
-    # must contain an author
-    if not 'author' in paste or not paste['author']:
-        return False
+    # # must have title
+    # if not 'title' in paste or not paste['title']:
+    #     return False
     
-    # must contain a date
-    if not 'date' in paste or not paste['date']:
-        return False
+    # # must have content
+    # if not 'content' in paste or not paste['content']:
+    #     return False
+
+    # # must contain an author
+    # if not 'author' in paste or not paste['author']:
+    #     return False
+    
+    # # must contain a date
+    # if not 'date' in paste or not paste['date']:
+    #     return False
 
     return True
 

@@ -64,7 +64,7 @@ def token_required(f):
 
     return decorated
 
-def generate_token(username, password):
+def generate_token(config, username, password):
     '''Given a username and a password, validate credentials and generate an
     auth token.
 
@@ -72,12 +72,13 @@ def generate_token(username, password):
         username (str): Username.
         password (str): Password.
     '''
-    user = db.get_user_info(username)
-    
+    user = db.get_user_info(username) 
+    expiry = config['token_expiry_days']
+
     if user and user['password'] == password:
         token = jwt.encode({
             'username': username,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=expiry)
         }, auth_key, algorithm="HS256")
         
         return jsonify({'token': token})

@@ -23,6 +23,8 @@ import helpers.auth as auth
 import helpers.utils as utils
 import time
 
+CONFIG_FILE = './config.yaml'
+
 app = Flask(__name__)
 
 @app.route('/paste', methods=['POST'])
@@ -38,7 +40,7 @@ def paste(user):
     paste['date'] = int(time.time() * 1000)
 
     # validate paste
-    if not utils.validate_paste(paste):
+    if not utils.validate_paste(app.config, paste):
         return jsonify({'message', 'Malformed paste.'}), 400
 
     # put in database
@@ -75,8 +77,13 @@ def login():
         return jsonify({'message': 'Missing credentials.'}), 400
 
     # attempt to generate an auth token
-    return auth.generate_token(data['username'], data['password'])
+    return auth.generate_token(app.config, data['username'], data['password'])
 
 if __name__ == '__main__':
+    # read config
+    local_config = utils.get_config(CONFIG_FILE)
+    app.config = app.config | local_config
+
+    # launch api
     app.run(host='0.0.0.0', debug=True)
     
