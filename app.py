@@ -65,6 +65,16 @@ def retrieve(id):
         print(e)
         return jsonify({'message': 'No such paste.'}), 404
 
+@app.route('/list', methods=['GET'])
+def list():
+    '''List all pastes.
+
+    Returns:
+        list: List of pastes as dicts, with contents omitted.
+    '''
+    pastes = DB().get_pastes()
+    return pastes
+
 @app.route('/login', methods=['POST'])
 def login():
     '''Log in.

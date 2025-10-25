@@ -131,3 +131,26 @@ class DB:
         }
 
         return user
+    
+    def get_pastes(self):
+        '''Return a list of pastes in the database.
+        '''
+        # pull all paste summaries
+        cursor = self.connection.cursor()
+        result = cursor.execute(f'SELECT id, title, author, date\
+            FROM pastes ORDER BY date DESC')
+        pastes_raw = result.fetchall()
+        cursor.close()
+
+        # format to list
+        pastes = []
+        for paste in pastes_raw:
+            this_paste = {
+                'id': paste[0],
+                'title': paste[1],
+                'author': paste[2],
+                'date': paste[3]
+            }
+            pastes.append(this_paste)
+
+        return pastes
