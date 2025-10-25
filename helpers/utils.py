@@ -18,21 +18,51 @@
 import time
 import yaml
 
-def get_config(config_file):
-    '''Load a YAML configuration file.
+CONFIG_FILE = './config.yaml'
 
-    Args:
-        config_file (str): Path to config file.
-
-    Return:
-        dict: Configuration.
+class Config:
+    '''Singleton configuration.
     '''
-    with open(config_file, 'r') as file:
-        data = yaml.safe_load(file)
-    return data
-    
+    _instance = None
 
-def validate_paste(config, paste):
+    def __new__(cls):
+        '''Retrieve the instance of the database or create a new one if it
+        doesn't exist.
+        '''
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.reload(CONFIG_FILE)
+        
+        return cls._instance
+
+    def reload(self, config_file):
+        '''Load a YAML configuration file.
+
+        Args:
+            config_file (str): Path to config file.
+
+        Return:
+            dict: Configuration.
+        '''
+        with open(config_file, 'r') as file:
+            data = yaml.safe_load(file)
+        
+        self.config = data
+    
+    def get(self, attribute, default=None):
+        '''Get an attribute from the configuration.
+
+        Args:
+            attribute (str): Attribute to get.
+            default (str): Value to default to if not found (default None)
+        '''
+        try:
+            return self.config[attribute]
+        except:
+            return default
+
+
+def validate_paste(paste):
     '''Validate a paste.
 
     Args:
@@ -45,25 +75,10 @@ def validate_paste(config, paste):
     if not paste:
         return False
     
-    # for field in config['paste_required_fields']:
-    #     if not field in paste or not paste[field]:
-    #         return False
-
-    # # must have title
-    # if not 'title' in paste or not paste['title']:
-    #     return False
-    
-    # # must have content
-    # if not 'content' in paste or not paste['content']:
-    #     return False
-
-    # # must contain an author
-    # if not 'author' in paste or not paste['author']:
-    #     return False
-    
-    # # must contain a date
-    # if not 'date' in paste or not paste['date']:
-    #     return False
+    # all required fields must be present
+    for field in Config().get('paste_required_fields', []):
+        if not field in paste or not paste[field]:
+            return False
 
     return True
 

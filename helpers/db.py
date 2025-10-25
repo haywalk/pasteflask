@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License along with
 # Pasteflask. If not, see <https://www.gnu.org/licenses/>. 
 
-import helpers.utils as utils
-
+from helpers.utils import Config, generate_id
 
 class DB:
     '''Singleton database for storing user information and pastes.
@@ -52,7 +51,7 @@ class DB:
         Returns:
             str: Paste ID if successful.
         '''
-        id = utils.generate_id()
+        id = generate_id()
         self.pastes[id] = paste
         print(self.pastes)
         return id

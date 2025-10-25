@@ -19,8 +19,11 @@ from functools import wraps
 from flask import request, jsonify
 import datetime
 from helpers.db import DB
+from helpers.utils import Config
 import jwt
 import os
+
+DEFAULT_EXPIRY_DAYS = 7
 
 # secret key for signing
 auth_key = os.environ.get('SECRET_KEY', 'my-secret-key')
@@ -64,7 +67,7 @@ def token_required(f):
 
     return decorated
 
-def generate_token(config, username, password):
+def generate_token(username, password):
     '''Given a username and a password, validate credentials and generate an
     auth token.
 
@@ -73,7 +76,7 @@ def generate_token(config, username, password):
         password (str): Password.
     '''
     user = DB().get_user_info(username) 
-    expiry = config['token_expiry_days']
+    expiry = Config().get('token_expiry_days', DEFAULT_EXPIRY_DAYS)
 
     if user and user['password'] == password:
         token = jwt.encode({
