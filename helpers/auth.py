@@ -59,7 +59,6 @@ def token_required(f):
         # failed to decode credentials
         except Exception as e:
             print(e)
-            pass
 
         # invalid token
         return jsonify({'message': 'Token is invalid!'}), 401
@@ -81,7 +80,7 @@ def generate_token(username, password):
     if user and user['password'] == password:
         token = jwt.encode({
             'username': username,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=expiry)
+            'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=expiry)
         }, auth_key, algorithm="HS256")
         
         return jsonify({'token': token})
