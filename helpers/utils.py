@@ -20,6 +20,7 @@ import yaml
 
 CONFIG_FILE = './config.yaml'
 
+
 class Config:
     '''Singleton configuration.
     '''
@@ -47,7 +48,7 @@ class Config:
         with open(config_file, 'r') as file:
             data = yaml.safe_load(file)
         
-        self.config = data
+        self.config_data = data
     
     def get(self, attribute, default=None):
         '''Get an attribute from the configuration.
@@ -57,8 +58,8 @@ class Config:
             default (str): Value to default to if not found (default None)
         '''
         try:
-            return self.config[attribute]
-        except:
+            return self.config_data[attribute]
+        except KeyError:
             return default
 
 
@@ -77,7 +78,7 @@ def validate_paste(paste):
     
     # all required fields must be present
     for field in Config().get('paste_required_fields', []):
-        if not field in paste or not paste[field]:
+        if field not in paste or not paste[field]:
             return False
 
     return True
