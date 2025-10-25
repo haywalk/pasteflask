@@ -1,3 +1,6 @@
+# database server
+database: 'pasteflask.db'
+
 # how long a login token lasts for
 token_expiry_days: 7 
 

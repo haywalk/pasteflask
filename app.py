@@ -44,7 +44,9 @@ def paste(user):
     # put in database
     try:
         return DB().add_paste(paste)
-    except:
+    except Exception as e:
+        print('pastefail')
+        print(e)
         return jsonify({'message': 'Failed to paste.'}), 500
 
 @app.route('/retrieve/<id>', methods=['GET'])
@@ -59,7 +61,8 @@ def retrieve(id):
     '''
     try:
         return DB().retrieve_paste(id)
-    except:
+    except Exception as e:
+        print(e)
         return jsonify({'message': 'No such paste.'}), 404
 
 @app.route('/login', methods=['POST'])
@@ -69,13 +72,15 @@ def login():
     Returns:
         str: Auth token if successful.
     '''
-    # pull header from request with username and password
-    data = request.get_json()    
-    if not data or not data['username'] or not data['password']:
-        return jsonify({'message': 'Missing credentials.'}), 400
-
-    # attempt to generate an auth token
-    return auth.generate_token(data['username'], data['password'])
+    try:
+        # pull header from request with username and password
+        data = request.get_json()    
+ 
+        # attempt to generate an auth token
+        return auth.generate_token(data['username'], data['password'])
+ 
+    except:
+        return jsonify({'message': 'Authentication failed.'}), 401
 
 if __name__ == '__main__':
     # launch api

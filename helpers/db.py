@@ -16,6 +16,10 @@
 # Pasteflask. If not, see <https://www.gnu.org/licenses/>. 
 
 from helpers.utils import Config, generate_id
+import sqlite3
+
+DEFAULT_DATABASE = 'pasteflask.db'
+
 
 class DB:
     '''Singleton database for storing user information and pastes.
@@ -39,7 +43,20 @@ class DB:
 
             # mock paste db
             cls._instance.pastes = {}
-        
+
+            # open connection to database
+            database_name = Config().get('database_name', DEFAULT_DATABASE)
+            cls._instance.connection = sqlite3.connect(database_name)
+
+
+            # create tables if they don't exist already
+            cursor = cls._instance.connection.cursor()
+            cursor.execute('CREATE TABLE IF NOT EXISTS\
+                users(username PRIMARY KEY, password)')
+            cursor.execute('CREATE TABLE IF NOT EXISTS\
+                pastes(id PRIMARY KEY, title, content, author, date)')
+            cursor.close()
+
         return cls._instance
 
     def add_paste(self, paste):
@@ -52,8 +69,18 @@ class DB:
             str: Paste ID if successful.
         '''
         id = generate_id()
-        self.pastes[id] = paste
-        print(self.pastes)
+        title = paste['title']
+        content = paste['content']    
+        author = paste['author']
+        date = paste['date']
+
+        # insert into pastes table
+        cursor = self.connection.cursor()
+        cursor.execute(f'INSERT INTO pastes VALUES\
+            ("{id}", "{title}", "{content}", "{author}", "{date}")')
+        cursor.close()
+        self.connection.commit()
+
         return id
 
     def retrieve_paste(self, id):
@@ -65,7 +92,22 @@ class DB:
         Returns:
             dict: Paste contents.
         '''
-        return self.pastes[id]
+        # pull paste from database
+        cursor = self.connection.cursor()
+        result = cursor.execute(f'SELECT * FROM pastes WHERE id = "{id}"')
+        paste_data = result.fetchone()
+        cursor.close()
+
+        # format response
+        paste = {
+            'id': paste_data[0],
+            'title': paste_data[1],
+            'content': paste_data[2],
+            'author': paste_data[3],
+            'date': paste_data[4]
+        }
+
+        return paste
 
     def get_user_info(self, username):
         '''Pull user information from the database.
@@ -76,4 +118,16 @@ class DB:
         Returns:
             dict: User information.
         '''
-        return self.users[username]
+        # get user info from database
+        cursor = self.connection.cursor()
+        result = cursor.execute(f'SELECT * FROM users WHERE username = "{username}"')
+        user_data = result.fetchone()
+        cursor.close()
+
+        # format response
+        user = {
+            'username': user_data[0],
+            'password': user_data[1]
+        }
+
+        return user
