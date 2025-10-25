@@ -26,7 +26,7 @@ import os
 DEFAULT_EXPIRY_DAYS = 7
 
 # secret key for signing
-auth_key = os.environ.get('SECRET_KEY', 'my-secret-key')
+auth_key = os.environ.get('SECRET_KEY', Config().get('secret_key'))
 
 def token_required(f):
     '''Wrapper for routes that require authentication.

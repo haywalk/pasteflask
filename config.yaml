@@ -1,6 +1,10 @@
 # database server
 database: 'pasteflask.db'
 
+# encryption key for JWT tokens (CHANGE THIS)
+# NOTE: if environment variable PASTEFLASK_KEY is set, it will take precedence
+secret_key: 'MYSECRETKEY'
+
 # how long a login token lasts for
 token_expiry_days: 7 
 
