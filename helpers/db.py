@@ -17,48 +17,64 @@
 
 import helpers.utils as utils
 
-# mock user database
-users = {
-    'testuser': {
-        'username': 'testuser',
-        'password': 'testpass'
-    }
-}
 
-# mock paste database
-pastes = {}
-
-def add_paste(paste):
-    '''Write information to the database.
-
-    Args:
-        paste (str): Paste contents.
-
-    Returns:
-        str: Paste ID if successful.
+class DB:
+    '''Singleton database for storing user information and pastes.
     '''
-    id = utils.generate_id()
-    pastes[id] = paste
-    return id
+    _instance = None
 
-def retrieve_paste(id):
-    '''Retrieve a paste from the database.
+    def __new__(cls):
+        '''Retrieve the instance of the database or create a new one if it
+        doesn't exist.
+        '''
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        
+            # mock user db
+            cls._instance.users = {
+                'testuser': {
+                    'username': 'testuser',
+                    'password': 'testpass'
+                }
+            }
 
-    Args: 
-        id (str): Paste ID.
+            # mock paste db
+            cls._instance.pastes = {}
+        
+        return cls._instance
 
-    Returns:
-        dict: Paste contents.
-    '''
-    return pastes[id]
+    def add_paste(self, paste):
+        '''Write information to the database.
 
-def get_user_info(username):
-    '''Pull user information from the database.
+        Args:
+            paste (str): Paste contents.
 
-    Args:
-        username (str): Username.
+        Returns:
+            str: Paste ID if successful.
+        '''
+        id = utils.generate_id()
+        self.pastes[id] = paste
+        print(self.pastes)
+        return id
 
-    Returns:
-        dict: User information.
-    '''
-    return users[username]
+    def retrieve_paste(self, id):
+        '''Retrieve a paste from the database.
+
+        Args: 
+            id (str): Paste ID.
+
+        Returns:
+            dict: Paste contents.
+        '''
+        return self.pastes[id]
+
+    def get_user_info(self, username):
+        '''Pull user information from the database.
+
+        Args:
+            username (str): Username.
+
+        Returns:
+            dict: User information.
+        '''
+        return self.users[username]

@@ -18,8 +18,8 @@
 from functools import wraps
 from flask import request, jsonify
 import datetime
+from helpers.db import DB
 import jwt
-import helpers.db as db
 import os
 
 # secret key for signing
@@ -49,7 +49,7 @@ def token_required(f):
         try:
             # get user from token and execute wrapped function as user
             data = jwt.decode(token, auth_key, algorithms=["HS256"])            
-            current_user = db.get_user_info(data['username'])
+            current_user = DB().get_user_info(data['username'])
             if current_user:
                 return f(current_user, *args, **kwargs)
         
@@ -72,7 +72,7 @@ def generate_token(config, username, password):
         username (str): Username.
         password (str): Password.
     '''
-    user = db.get_user_info(username) 
+    user = DB().get_user_info(username) 
     expiry = config['token_expiry_days']
 
     if user and user['password'] == password:

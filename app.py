@@ -18,7 +18,7 @@
 # Pasteflask. If not, see <https://www.gnu.org/licenses/>. 
 
 from flask import Flask, request, jsonify
-import helpers.db as db
+from helpers.db import DB
 import helpers.auth as auth
 import helpers.utils as utils
 import time
@@ -45,7 +45,7 @@ def paste(user):
 
     # put in database
     try:
-        return db.add_paste(paste)
+        return DB().add_paste(paste)
     except:
         return jsonify({'message': 'Failed to paste.'}), 500
 
@@ -60,7 +60,7 @@ def retrieve(id):
         str: Contents of paste.
     '''
     try:
-        return db.retrieve_paste(id)
+        return DB().retrieve_paste(id)
     except:
         return jsonify({'message': 'No such paste.'}), 404
 
