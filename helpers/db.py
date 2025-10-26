@@ -21,6 +21,16 @@ import sqlite3
 DEFAULT_DATABASE = 'pasteflask.db'
 
 
+class DBError(Exception):
+    '''Error reading from/writing to database.
+    '''
+    def __init__(self, message):
+        '''Create DBError object.
+        '''
+        self.message = message
+        super().__init__(self.message)   
+
+
 class DB:
     '''Singleton database for storing user information and pastes.
     '''

@@ -19,12 +19,14 @@
 
 import time
 from flask import Flask, request, jsonify
-from helpers.db import DB
+from flask_cors import CORS
+from helpers.db import DB, DBError
 from helpers.utils import Config
 from helpers import auth
 from helpers import utils
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
 
 @app.route('/paste', methods=['POST'])
 @auth.token_required
@@ -45,8 +47,7 @@ def paste(user):
     # put in database
     try:
         return DB().add_paste(paste_data)
-    except Exception as e:
-        print('pastefail')
+    except DBError as e:
         print(e)
         return jsonify({'message': 'Failed to paste.'}), 500
 
@@ -62,7 +63,7 @@ def retrieve(paste_id):
     '''
     try:
         return DB().retrieve_paste(paste_id)
-    except Exception as e:
+    except DBError as e:
         print(e)
         return jsonify({'message': 'No such paste.'}), 404
 
@@ -86,11 +87,9 @@ def login():
     try:
         # pull header from request with username and password
         data = request.get_json()
-
         # attempt to generate an auth token
         return auth.generate_token(data['username'], data['password'])
-
-    except:
+    except (TypeError, KeyError, DBError):
         return jsonify({'message': 'Authentication failed.'}), 401
 
 @app.route('/register', methods=['POST'])
@@ -113,13 +112,14 @@ def register():
         data = request.get_json()
         username = data['username']
         password = data['password']
-    except:
+    except (TypeError, KeyError):
         return jsonify({'message': 'Missing credentials.'}), 400
 
     # look up list of users
     try:
         users = DB().list_users()
-    except:
+    except DBError as e:
+        print(e)
         return jsonify({'message', 'Internal error.'}), 500
 
     # make sure username is unique
@@ -129,7 +129,8 @@ def register():
     # add user to database
     try:
         DB().add_user(username, password)
-    except:
+    except DBError as e:
+        print(e)
         return jsonify({'message': 'Failed to add user.'}), 500
 
     # success

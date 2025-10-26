@@ -1,3 +1,5 @@
 flask
 pyjwt
 PyYAML
+gunicorn
+Flask-Cors
