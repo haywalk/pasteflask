@@ -1,27 +1,30 @@
-# Copyright 2025 Hayden Walker. 
+# Copyright 2025 Hayden Walker.
 #
 # This file is part of Pasteflask.
-# 
-# Pasteflask is free software: you can redistribute it and/or modify it under 
+#
+# Pasteflask is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
 # Foundation, either version 3 of the License, or (at your option) any later
 # version.
 #
 # Pasteflask is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 # details.
 #
 # You should have received a copy of the GNU General Public License along with
-# Pasteflask. If not, see <https://www.gnu.org/licenses/>. 
+# Pasteflask. If not, see <https://www.gnu.org/licenses/>.
 
-from functools import wraps
-from flask import request, jsonify
+'''Module with utility functions for generating and validating auth tokens.
+'''
+
 import datetime
-from helpers.db import DB
-from helpers.utils import Config
-import jwt
 import os
+from functools import wraps
+import jwt
+from flask import request, jsonify
+from helpers.db import DB, DBError
+from helpers.utils import Config
 
 DEFAULT_EXPIRY_DAYS = 7
 
@@ -43,21 +46,21 @@ def token_required(f):
         token = None
         if 'Authorization' in request.headers:
             token = request.headers['Authorization'].replace('Bearer ', '')
-        
+
         # if missing, send message and code 401
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
-        
+
         # attempt to decode credentials
         try:
             # get user from token and execute wrapped function as user
-            data = jwt.decode(token, auth_key, algorithms=["HS256"])            
+            data = jwt.decode(token, auth_key, algorithms=["HS256"])
             current_user = DB().get_user_info(data['username'])
             if current_user:
                 return f(current_user, *args, **kwargs)
-        
+
         # failed to decode credentials
-        except Exception as e:
+        except (TypeError, KeyError, DBError) as e:
             print(e)
 
         # invalid token
@@ -74,7 +77,7 @@ def generate_token(username, password):
         username (str): Username.
         password (str): Password.
     '''
-    user = DB().get_user_info(username) 
+    user = DB().get_user_info(username)
     expiry = Config().get('token_expiry_days', DEFAULT_EXPIRY_DAYS)
 
     if user and user['password'] == password:
@@ -82,7 +85,7 @@ def generate_token(username, password):
             'username': username,
             'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=expiry)
         }, auth_key, algorithm="HS256")
-        
+
         return jsonify({'token': token})
 
     return jsonify({'message': 'invalid credentials'}), 401

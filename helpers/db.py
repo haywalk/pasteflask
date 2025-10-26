@@ -1,22 +1,25 @@
-# Copyright 2025 Hayden Walker. 
+# Copyright 2025 Hayden Walker.
 #
 # This file is part of Pasteflask.
-# 
-# Pasteflask is free software: you can redistribute it and/or modify it under 
+#
+# Pasteflask is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
 # Foundation, either version 3 of the License, or (at your option) any later
 # version.
 #
 # Pasteflask is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 # details.
 #
 # You should have received a copy of the GNU General Public License along with
-# Pasteflask. If not, see <https://www.gnu.org/licenses/>. 
+# Pasteflask. If not, see <https://www.gnu.org/licenses/>.
 
-from helpers.utils import Config, generate_id
+'''Module for interacting with the application's SQLite database.
+'''
+
 import sqlite3
+from helpers.utils import Config, generate_id
 
 DEFAULT_DATABASE = 'pasteflask.db'
 
@@ -28,13 +31,14 @@ class DBError(Exception):
         '''Create DBError object.
         '''
         self.message = message
-        super().__init__(self.message)   
+        super().__init__(self.message)
 
 
 class DB:
     '''Singleton database for storing user information and pastes.
     '''
     _instance = None
+    connection = None
 
     def __new__(cls):
         '''Retrieve the instance of the database or create a new one if it
@@ -42,7 +46,7 @@ class DB:
         '''
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-        
+
             # mock user db
             cls._instance.users = {
                 'testuser': {
@@ -78,33 +82,33 @@ class DB:
         Returns:
             str: Paste ID if successful.
         '''
-        id = generate_id()
+        paste_id = generate_id()
         title = paste['title']
-        content = paste['content']    
+        content = paste['content']
         author = paste['author']
         date = paste['date']
 
         # insert into pastes table
         cursor = self.connection.cursor()
         cursor.execute(f'INSERT INTO pastes VALUES\
-            ("{id}", "{title}", "{content}", "{author}", "{date}")')
+            ("{paste_id}", "{title}", "{content}", "{author}", "{date}")')
         cursor.close()
         self.connection.commit()
 
-        return id
+        return paste_id
 
-    def retrieve_paste(self, id):
+    def retrieve_paste(self, paste_id):
         '''Retrieve a paste from the database.
 
         Args: 
-            id (str): Paste ID.
+            paste_id (str): Paste ID.
 
         Returns:
             dict: Paste contents.
         '''
         # pull paste from database
         cursor = self.connection.cursor()
-        result = cursor.execute(f'SELECT * FROM pastes WHERE id = "{id}"')
+        result = cursor.execute(f'SELECT * FROM pastes WHERE id = "{paste_id}"')
         paste_data = result.fetchone()
         cursor.close()
 
@@ -141,13 +145,13 @@ class DB:
         }
 
         return user
-    
+
     def get_pastes(self):
         '''Return a list of pastes in the database.
         '''
         # pull all paste summaries
         cursor = self.connection.cursor()
-        result = cursor.execute(f'SELECT id, title, author, date\
+        result = cursor.execute('SELECT id, title, author, date\
             FROM pastes ORDER BY date DESC')
         pastes_raw = result.fetchall()
         cursor.close()
@@ -164,7 +168,7 @@ class DB:
             pastes.append(this_paste)
 
         return pastes
-    
+
     def list_users(self):
         '''List all users.
 
@@ -181,7 +185,7 @@ class DB:
             users.append(user[0])
 
         return users
-    
+
     def add_user(self, username, password):
         '''Add a new user.
 
@@ -197,5 +201,3 @@ class DB:
         cursor.close()
         self.connection.commit()
         return True
-    
-            
