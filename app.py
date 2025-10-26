@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License along with
 # Pasteflask. If not, see <https://www.gnu.org/licenses/>.
 
+'''Flask API for an authenticated pastebin.
+'''
+
 import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -64,10 +67,10 @@ def retrieve(paste_id):
         str: Contents of paste.
     '''
     try:
-        paste = DB().retrieve_paste(paste_id)
+        paste_data = DB().retrieve_paste(paste_id)
         Logger().info(f'Retrieved paste {paste_id}.')
-        return paste
-    
+        return paste_data
+
     except DBError as e:
         Logger().error(e)
         return jsonify({'message': 'No such paste.'}), 404
@@ -82,7 +85,7 @@ def list_pastes():
     try:
         pastes = DB().get_pastes()
         return pastes
-    
+
     except DBError as e:
         Logger().error(e)
         return None

@@ -99,7 +99,7 @@ class Logger:
         '''
         self.logger_instance.error(message)
 
-        
+
 def validate_paste(paste):
     '''Validate a paste.
 
