@@ -19,9 +19,11 @@
 '''
 
 import time
+import logging
 import yaml
 
 CONFIG_FILE = './config.yaml'
+LOG_FILE_NAME = 'pasteflask.log'
 
 
 class Config:
@@ -67,6 +69,37 @@ class Config:
             return default
 
 
+class Logger:
+    '''Singleton logger.
+    '''
+    _instance = None
+    logger_instance = None
+
+    def __new__(cls):
+        '''Retrieve the instance of the logger or create a new one if it
+        doesn't exist.
+        '''
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+
+            # set up logger
+            logfile = Config().get('log_file_name', LOG_FILE_NAME)
+            logging.basicConfig(filename=logfile, level=logging.INFO)
+            cls._instance.logger_instance = logging.getLogger(__name__)
+
+        return cls._instance
+
+    def info(self, message):
+        '''Write an INFO log.
+        '''
+        self.logger_instance.info(message)
+
+    def error(self, message):
+        '''Write an ERROR log.
+        '''
+        self.logger_instance.error(message)
+
+        
 def validate_paste(paste):
     '''Validate a paste.
 
